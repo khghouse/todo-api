@@ -4,11 +4,25 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"todo-api/internal/database"
 	"todo-api/internal/health"
 	"todo-api/internal/todo"
 )
 
 func main() {
+	db, err := database.OpenSQLiteInMemory() // SQLite 인메모리 데이터베이스를 연다.
+	if err != nil {
+		log.Fatalf("failed to connect database: %v", err)
+	}
+
+	defer func() {
+		if err := db.Close(); err != nil { // 프로그램 종료 시 데이터베이스 연결을 닫는다.
+			log.Printf("failed to close database: %v", err)
+		}
+	}()
+
+	log.Println("SQLite in-memory database connected")
+
 	now := time.Now().UTC() // 현재 시각을 UTC 기준으로 표현한다.
 
 	// 초기 Todo slice를 복사하여 메모리 저장소를 생성한다.
@@ -27,6 +41,9 @@ func main() {
 	mux.HandleFunc("/todos", todoHandler.FindAll) // Todo 목록 조회 핸들러를 등록한다.
 
 	log.Println("Server is running on http://localhost:8080")
+
 	// 8080 포트에서 서버를 실행하고 요청 처리를 mux에 위임한다.
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Printf("server stopped: %v", err)
+	}
 }
