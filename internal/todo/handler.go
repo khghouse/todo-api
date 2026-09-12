@@ -24,6 +24,8 @@ func (h *Handler) FindAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
 	// Todo slice를 JSON으로 변환해 HTTP 응답 본문에 작성한다.
 	if err := json.NewEncoder(w).Encode(todos); err != nil {
 		http.Error(w, "failed to encode todos", http.StatusInternalServerError)
