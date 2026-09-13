@@ -28,8 +28,11 @@ func main() {
 		return
 	}
 
-	// SQLite 저장소를 Repository 인터페이스로 Todo 핸들러에 주입한다.
-	todoHandler := todo.NewHandler(repository)
+	// Repository를 사용하는 Todo 서비스를 생성한다.
+	todoService := todo.NewService(repository)
+
+	// Service를 사용하는 HTTP 핸들러를 생성한다.
+	todoHandler := todo.NewHandler(todoService)
 
 	// 표준 라이브러리 라우터를 생성하고 요청 경로에 핸들러를 등록한다.
 	mux := http.NewServeMux()
