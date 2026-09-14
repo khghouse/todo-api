@@ -108,3 +108,41 @@ func (r *SQLiteRepository) FindAll() ([]Todo, error) {
 	// 모든 행을 정상적으로 읽었으므로 Todo 목록과 nil 오류를 반환한다.
 	return todos, nil
 }
+
+// Create는 전달받은 Todo를 SQLite의 todos 테이블에 저장한다.
+func (r *SQLiteRepository) Create(item Todo) error {
+	// 물음표(?)는 실행 시 전달할 값을 넣는 SQLite 매개변수 자리다.
+	const query = `
+		INSERT INTO todos (
+			id,
+			title,
+			completed,
+			created_at
+		)
+		VALUES (?, ?, ?, ?)
+	`
+
+	// Go의 bool을 SQLite에 저장할 INTEGER 값(false=0, true=1)으로 변환한다.
+	completed := 0
+	if item.Completed {
+		completed = 1
+	}
+
+	// Go의 time.Time을 UTC 기준 RFC3339Nano 문자열로 변환하여 TEXT 컬럼에 저장한다.
+	createdAt := item.CreatedAt.UTC().Format(time.RFC3339Nano)
+
+	// Exec에 전달한 값들은 SQL의 물음표 자리에 같은 순서로 안전하게 바인딩된다.
+	if _, err := r.db.Exec(
+		query,
+		item.ID,    // 첫 번째 ?
+		item.Title, // 두 번째 ?
+		completed,  // 세 번째 ?
+		createdAt,  // 네 번째 ?
+	); err != nil {
+		// 원본 DB 오류에 어떤 작업이 실패했는지 문맥을 추가하여 반환한다.
+		return fmt.Errorf("insert todo: %w", err)
+	}
+
+	// INSERT가 정상적으로 끝났음을 nil 오류로 알린다.
+	return nil
+}
