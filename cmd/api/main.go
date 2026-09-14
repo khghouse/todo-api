@@ -38,6 +38,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", health.Handler)     // 서버 상태 확인 핸들러를 등록한다.
 	mux.HandleFunc("GET /todos", todoHandler.FindAll) // Todo 목록 조회 핸들러를 등록한다.
+	mux.HandleFunc("POST /todos", todoHandler.Create) // Todo 생성 핸들러를 등록한다.
 
 	log.Println("Server is running on http://localhost:8080")
 
